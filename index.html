@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Live Temperature Dashboard</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f3f3;
+      text-align: center;
+      padding-top: 60px;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: inline-block;
+    }
+    h1 {
+      font-size: 32px;
+    }
+    #temp {
+      font-size: 48px;
+      color: #d9534f;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Live Temperature Monitor</h1>
+    <p>Current Temperature:</p>
+    <div id="temp">Loading...</div>
+  </div>
+
+  <script>
+    // ✅ Your Firebase config (v8 format, using your actual data)
+    var firebaseConfig = {
+      apiKey: "AIzaSyA-xJ3Yg_8D0dKRA3Yj9QXhUuQ5VzR99Ko",
+      authDomain: "tempmonitor2-d7d13.firebaseapp.com",
+      databaseURL: "https://tempmonitor2-d7d13-default-rtdb.firebaseio.com",
+      projectId: "tempmonitor2-d7d13",
+      storageBucket: "tempmonitor2-d7d13.firebasestorage.app",
+      messagingSenderId: "940300210107",
+      appId: "1:940300210107:web:dca7f63595363e709f7e9e"
+    };
+
+    // ✅ Initialize Firebase (v8 style)
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+
+    // ✅ Get latest temperature from Firebase
+    var tempRef = database.ref("/temperature");
+
+    // Show last value
+    tempRef.limitToLast(1).on("child_added", function(snapshot) {
+      var temp = snapshot.val();
+      document.getElementById("temp").innerText = temp.toFixed(2) + " °C";
+    });
+
+    // Also update on value change
+    tempRef.on("child_changed", function(snapshot) {
+      var temp = snapshot.val();
+      document.getElementById("temp").innerText = temp.toFixed(2) + " °C";
+    });
+  </script>
+
+</body>
+</html>
