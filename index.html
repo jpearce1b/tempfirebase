@@ -2,43 +2,60 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Live Temperature Dashboard</title>
+  <title>🔥 Live Temperature Dashboard</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f3f3f3;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #fceabb, #f8b500);
       text-align: center;
       padding-top: 60px;
+      margin: 0;
     }
     .container {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background: #ffffffdd;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
       display: inline-block;
+      max-width: 500px;
     }
     h1 {
-      font-size: 32px;
+      font-size: 36px;
+      margin-bottom: 10px;
+      color: #333;
     }
-    #temp {
+    #tempC, #tempF {
       font-size: 48px;
+      margin: 10px 0;
+      font-weight: bold;
       color: #d9534f;
+    }
+    #timestamp {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #555;
+    }
+    .label {
+      font-size: 20px;
+      color: #444;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Live Temperature Monitor</h1>
-    <p>Current Temperature:</p>
-    <div id="temp">Loading...</div>
+    <h1>🔥 Live Temperature Monitor</h1>
+    <p class="label">Current Temperature:</p>
+    <div id="tempC">Loading °C...</div>
+    <div id="tempF">Loading °F...</div>
+    <div id="timestamp">--</div>
   </div>
 
   <script>
-    // ✅ Your Firebase config (v8 format, using your actual data)
+    // Your Firebase config
     var firebaseConfig = {
       apiKey: "AIzaSyA-xJ3Yg_8D0dKRA3Yj9QXhUuQ5VzR99Ko",
       authDomain: "tempmonitor2-d7d13.firebaseapp.com",
@@ -49,25 +66,39 @@
       appId: "1:940300210107:web:dca7f63595363e709f7e9e"
     };
 
-    // ✅ Initialize Firebase (v8 style)
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     var database = firebase.database();
 
-    // ✅ Get latest temperature from Firebase
+    // Listen to the last temperature value
     var tempRef = database.ref("/temperature");
-
-    // Show last value
     tempRef.limitToLast(1).on("child_added", function(snapshot) {
-      var temp = snapshot.val();
-      document.getElementById("temp").innerText = temp.toFixed(2) + " °C";
+      var tempC = snapshot.val();
+      var tempF = (tempC * 9/5) + 32;
+
+      document.getElementById("tempC").innerText = tempC.toFixed(2) + " °C";
+      document.getElementById("tempF").innerText = tempF.toFixed(2) + " °F";
+
+      // Get timestamp of reading
+      var now = new Date();
+      document.getElementById("timestamp").innerText =
+        "Last updated: " + now.toLocaleString();
     });
 
-    // Also update on value change
+    // Also update if same child gets updated
     tempRef.on("child_changed", function(snapshot) {
-      var temp = snapshot.val();
-      document.getElementById("temp").innerText = temp.toFixed(2) + " °C";
+      var tempC = snapshot.val();
+      var tempF = (tempC * 9/5) + 32;
+
+      document.getElementById("tempC").innerText = tempC.toFixed(2) + " °C";
+      document.getElementById("tempF").innerText = tempF.toFixed(2) + " °F";
+
+      var now = new Date();
+      document.getElementById("timestamp").innerText =
+        "Last updated: " + now.toLocaleString();
     });
   </script>
 
 </body>
 </html>
+
