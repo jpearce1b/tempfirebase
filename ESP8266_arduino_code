@@ -1,0 +1,65 @@
+#include <Wire.h>
+#include <ESP8266WiFi.h>
+#include <FirebaseESP8266.h>
+#include <SparkFun_TMP117.h>
+
+// Wi-Fi credentials
+const char* ssid = "DrJamesSparkle";
+const char* password = "Aut0bahn";
+
+// Firebase credentials
+const char* FIREBASE_HOST = "tempmonitor2-d7d13-default-rtdb.firebaseio.com";  // no https://
+const char* FIREBASE_AUTH = "pJy8taBeZeNS1Hn1zehKNslq7iePhlMWa2wYvDiT";
+
+FirebaseData firebaseData;
+FirebaseAuth auth;
+FirebaseConfig config;
+
+TMP117 tempSensor;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(D2, D1);  // SDA=D2, SCL=D1
+
+  // Initialize TMP117
+  if (!tempSensor.begin()) {
+    Serial.println("TMP117 not detected. Check wiring.");
+    while (1);
+  }
+  Serial.println("TMP117 detected.");
+
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected!");
+  Serial.print("ESP IP: ");
+  Serial.println(WiFi.localIP());
+
+  // Firebase setup
+  config.host = FIREBASE_HOST;
+  config.signer.tokens.legacy_token = FIREBASE_AUTH;
+
+  Firebase.begin(&config, &auth);
+  Firebase.reconnectWiFi(true);
+}
+
+void loop() {
+  float tempC = tempSensor.readTempC();
+  Serial.print("Temp: ");
+  Serial.print(tempC);
+  Serial.println(" °C");
+
+  // Send data to Firebase
+  if (Firebase.pushFloat(firebaseData, "/temperature", tempC)) {
+    Serial.println("Data sent to Firebase!");
+  } else {
+    Serial.print("Firebase error: ");
+    Serial.println(firebaseData.errorReason());
+  }
+
+  delay(5000);
+}
